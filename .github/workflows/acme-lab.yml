@@ -55,5 +55,5 @@ jobs:
     name: Job 3
     uses: ./.github/workflows/i-am-reusable-maybe.yml
     with:
-      something: ${{ env.MY_COOL_ENV_VAR_IS_HERE }}
+      something: '${{ env.MY_COOL_ENV_VAR_IS_HERE }}'
       something-else: 'To'
