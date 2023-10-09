@@ -1,0 +1,107 @@
+name: Acme Lab actions
+
+on:
+  workflow_dispatch:
+    inputs:
+      AA:
+        type: string
+        default: default
+        description: AA
+  push:
+    branches:
+      - main
+      - master
+      - develop
+
+jobs:
+  job-1:
+    name: Job 1 name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Step 1.2 name
+        id: step-1-2
+        shell: bash
+        run: echo "Hello world"
+      - name: Step 1.3 name
+        id: step-1-3
+        shell: sh
+        run: echo "some_output=$MESSAGE_ID" >> $GITHUB_OUTPUT
+      - name: Step 1.4 name
+        id: step-1-4
+        shell: bash
+        env:
+          COOL_VAR: ${{ steps.step-1-3.outputs.some_output }}
+        run: |
+          echo "COOL_VAR => '${{ env.COOL_VAR }}'"
+    outputs:
+      var_a: ${{ steps.step-1-3.outputs.some_output }}
+
+  job-2:
+    name: Job 2 cooler name
+    runs-on: ubuntu-latest
+    needs:
+      - job-1
+    steps:
+      - uses: actions/checkout@v3
+      - name: Step 2.2 name
+        id: step-2-2
+        shell: bash
+        run: |
+          echo "Hello world, this is output from first-job : '${{ jobs.job-1.outputs.var_a }}'"
+
+  job-3:
+    name: Job 3
+    runs-on: ubuntu-latest
+    if: ${{ success() }}
+    needs:
+      - job-1
+      - job-2
+    steps:
+      - name: Step 3.1 name
+        id: step-3-1
+        shell: bash
+        run: |
+          echo "JOB 3 : SUCCESS"
+
+  job-4:
+    name: Job 4
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    needs:
+      - job-1
+      - job-2
+    steps:
+      - name: Step 4.1 name
+        id: step-4-1
+        shell: bash
+        run: |
+          echo "JOB 4 : FAIULRE"
+
+  job-5:
+    name: Job 5
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - job-1
+      - job-2
+    steps:
+      - name: Step 5.1
+        id: step-5-1
+        shell: bash
+        run: |
+          echo "TEST failure()";
+          if [ failure() ]; then
+            echo "FAILURE";
+          else
+            echo "SUCCESS";
+          fi
+
+          echo "TEST success()"
+          if [ success() ]; then
+            echo "SUCCESS";
+          else
+            echo "FAILURE";
+          fi
+
+          echo "END"
