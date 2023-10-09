@@ -48,7 +48,7 @@ jobs:
         id: step-2-2
         shell: bash
         run: |
-          echo "Hello world, this is output from first-job : '${{ jobs.job-1.outputs.var_a }}'"
+          echo "Hello world, this is output from first-job : '${{ needs.jobs.job-1.outputs.var_a }}'"
 
   job-3:
     name: Job 3
