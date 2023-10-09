@@ -1,0 +1,29 @@
+name: Acme Lab reusable actions (maybe)
+
+on:
+  workflow_call:
+    inputs:
+      something:
+        description: 'Input something here, it is required'
+        required: true
+        type: string
+      something-else:
+        description: 'And if you want, something else here!'
+        required: false
+        type: string
+
+jobs:
+  job-reusable-maybe:
+    name: Reusable workflow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Step 5.0
+        id: step-5-0
+        run: |
+          echo "Hi, I am reusable workflow, welcome! What is your name?";
+      - name: Step 5.1
+        id: step-5-1
+        run: |
+          echo "Forgot to tell you, these are my inputs:";
+          echo "something      = '${{ inputs.something }}'";
+          echo "something-else = '${{ inputs.something-else }}'";

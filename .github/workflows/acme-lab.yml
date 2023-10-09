@@ -13,6 +13,9 @@ on:
       - master
       - develop
 
+env:
+  MY_COOL_ENV_VAR_IS_HERE: 'Pikachu!' # #Or not?
+
 jobs:
   job-1:
     name: Job 1 name
@@ -50,55 +53,7 @@ jobs:
 
   job-3:
     name: Job 3
-    runs-on: ubuntu-latest
-    if: ${{ success() }}
-    needs:
-      - job-1
-      - job-2
-    steps:
-      - name: Step 3.1 name
-        id: step-3-1
-        shell: bash
-        run: |
-          echo "JOB 3 : SUCCESS"
-
-  job-4:
-    name: Job 4
-    runs-on: ubuntu-latest
-    if: ${{ failure() }}
-    needs:
-      - job-1
-      - job-2
-    steps:
-      - name: Step 4.1 name
-        id: step-4-1
-        shell: bash
-        run: |
-          echo "JOB 4 : FAIULRE"
-
-  job-5:
-    name: Job 5
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
-    needs:
-      - job-1
-      - job-2
-    steps:
-      - name: Step 5.1
-        id: step-5-1
-        shell: bash
-        run: |
-          echo "List all functions";
-          declare -F
-      - name: Step 5.2
-        id: step-5-2
-        shell: bash
-        run: |
-          echo "List all functions and their definition";
-          declare -f
-      - name: Step 5.3
-        id: step-5-3
-        shell: bash
-        run: |
-          echo "List all variables";
-          env
+    uses: ./.github/workflows/i-am-reusable-maybe.yml
+    with:
+      something: ${{ env.MY_COOL_ENV_VAR_IS_HERE }}
+      something-else: 'To'
