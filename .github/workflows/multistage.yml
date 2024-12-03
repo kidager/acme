@@ -46,24 +46,6 @@ jobs:
           file: docker/base.Dockerfile
           tags: ${{ steps.base-image-metadata.outputs.tags }}
 
-      - name: Prepare cron image metadata
-        id: cron-image-metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.CRON_IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ github.sha }}
-
-      - name: Build cron image
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          file: docker/cron.Dockerfile
-          build-contexts: |
-            base-php-image=docker-image://${{ steps.base-image-metadata.outputs.tags }}
-          tags: ${{ steps.cron-image-metadata.outputs.tags }}
-
       - name: Prepare worker image metadata
         id: worker-image-metadata
         uses: docker/metadata-action@v5
@@ -81,3 +63,21 @@ jobs:
           build-contexts: |
             base-php-image=docker-image://${{ steps.base-image-metadata.outputs.tags }}
           tags: ${{ steps.worker-image-metadata.outputs.tags }}
+
+      - name: Prepare cron image metadata
+        id: cron-image-metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.CRON_IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ github.sha }}
+
+      - name: Build cron image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          file: docker/cron.Dockerfile
+          build-contexts: |
+            base-php-image=docker-image://${{ steps.base-image-metadata.outputs.tags }}
+          tags: ${{ steps.cron-image-metadata.outputs.tags }}
