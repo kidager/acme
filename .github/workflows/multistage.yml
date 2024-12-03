@@ -44,9 +44,8 @@ jobs:
       - name: Build base image
         uses: docker/build-push-action@v6
         env:
-          CACHE_REF: ${{ env.WORKER_IMAGE_NAME }}:${{ env.CACHE_TAG }}
-          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.CACHE_REF }}
-          CACHE_FROM: type=registry,ref=${{ env.CACHE_REF }}
+          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.WORKER_IMAGE_NAME }}:${{ env.CACHE_TAG }}
+          CACHE_FROM: type=registry,ref=${{ env.WORKER_IMAGE_NAME }}:${{ env.CACHE_TAG }}
         with:
           push: true
           file: docker/base.Dockerfile
@@ -67,9 +66,8 @@ jobs:
       - name: Build worker image
         uses: docker/build-push-action@v6
         env:
-          CACHE_REF: ${{ env.CRON_IMAGE_NAME }}:${{ env.CACHE_TAG }}
-          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.CACHE_REF }}
-          CACHE_FROM: type=registry,ref=${{ env.CACHE_REF }}
+          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.CRON_IMAGE_NAME }}:${{ env.CACHE_TAG }}
+          CACHE_FROM: type=registry,ref=${{ env.CRON_IMAGE_NAME }}:${{ env.CACHE_TAG }}
         with:
           push: true
           file: docker/worker.Dockerfile
@@ -92,9 +90,8 @@ jobs:
       - name: Build cron image
         uses: docker/build-push-action@v6
         env:
-          CACHE_REF: ${{ env.BASE_IMAGE_NAME }}:${{ env.CACHE_TAG }}
-          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.CACHE_REF }}
-          CACHE_FROM: type=registry,ref=${{ env.CACHE_REF }}
+          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.BASE_IMAGE_NAME }}:${{ env.CACHE_TAG }}
+          CACHE_FROM: type=registry,ref=${{ env.BASE_IMAGE_NAME }}:${{ env.CACHE_TAG }}
         with:
           push: true
           file: docker/cron.Dockerfile
