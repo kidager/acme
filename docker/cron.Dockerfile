@@ -13,7 +13,7 @@ RUN arch="$(uname -m)" \
     && chmod +x /usr/bin/supercronic
 
 
-COPY --link --chown=www-data:www-data docker/cron/crontab /etc/custom-crontab
+COPY --chown=www-data:www-data docker/cron/crontab /etc/custom-crontab
 
 USER www-data
 
