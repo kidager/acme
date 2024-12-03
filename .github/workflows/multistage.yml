@@ -12,14 +12,28 @@ permissions:
   packages: write
 
 env:
-  BASE_IMAGE_NAME: ghcr.io/kidager/test-php-image
-  CRON_IMAGE_NAME: ghcr.io/kidager/test-cron-image
-  WORKER_IMAGE_NAME: ghcr.io/kidager/test-worker-image
+  DOCKER_PREFIX: ghcr.io/kidager
   CACHE_TAG: cache
 
 jobs:
   docker:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - dockerfile: docker/base.Dockerfile
+            tagname: test-php-image
+
+          - dockerfile: docker/cron.Dockerfile
+            tagname: test-cron-image
+            base_image_tag: base-php-image
+            base_image_replace_with: test-php-image
+
+          - dockerfile: docker/worker.Dockerfile
+            tagname: test-worker-image
+            base_image_tag: base-php-image
+            base_image_replace_with: test-php-image
+
     steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -31,72 +45,26 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare base image metadata
-        id: base-image-metadata
+      - name: Prepare metadata [${{ matrix.image.tagname }}]
+        id: image-metadata
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.BASE_IMAGE_NAME }}
+            ${{ env.DOCKER_PREFIX }}/${{ matrix.image.tagname }}
           tags: |
             type=raw,value=${{ github.sha }}
             type=raw,value=latest
 
-      - name: Build base image
+      - name: Build image [${{ matrix.image.tagname }}]
         uses: docker/build-push-action@v6
         env:
-          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.WORKER_IMAGE_NAME }}:${{ env.CACHE_TAG }}
-          CACHE_FROM: type=registry,ref=${{ env.WORKER_IMAGE_NAME }}:${{ env.CACHE_TAG }}
+          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.DOCKER_PREFIX }}/${{ matrix.image.tagname }}:${{ env.CACHE_TAG }}
+          CACHE_FROM: type=registry,ref=${{ env.DOCKER_PREFIX }}/${{ matrix.image.tagname }}:${{ env.CACHE_TAG }}
+          BUILD_CONTEXT: ${{ matrix.image.base_image_replace_with && format('{0}=docker-image://{1}/{2}', matrix.image.base_image_tag, env.DOCKER_PREFIX, matrix.image.base_image_replace_with) || null }}
         with:
-          push: true
-          file: docker/base.Dockerfile
-          tags: ${{ steps.base-image-metadata.outputs.tags }}
+          push: ${{ matrix.image.should_push || true }}
+          file: ${{ matrix.image.dockerfile }}
+          tags: ${{ steps.image-metadata.outputs.tags }}
           cache-from: ${{ env.CACHE_FROM }}
           cache-to: ${{ github.event_name == 'release' && env.CACHE_TO || null }}
-
-      - name: Prepare worker image metadata
-        id: worker-image-metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.WORKER_IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ github.sha }}
-            type=raw,value=latest
-
-      - name: Build worker image
-        uses: docker/build-push-action@v6
-        env:
-          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.CRON_IMAGE_NAME }}:${{ env.CACHE_TAG }}
-          CACHE_FROM: type=registry,ref=${{ env.CRON_IMAGE_NAME }}:${{ env.CACHE_TAG }}
-        with:
-          push: true
-          file: docker/worker.Dockerfile
-          build-contexts: |
-            base-php-image=docker-image://${{ fromJSON(steps.base-image-metadata.outputs.json).tags[0] }}
-          tags: ${{ steps.worker-image-metadata.outputs.tags }}
-          cache-from: ${{ env.CACHE_FROM }}
-          cache-to: ${{ github.event_name == 'release' && env.CACHE_TO || null }}
-
-      - name: Prepare cron image metadata
-        id: cron-image-metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.CRON_IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ github.sha }}
-            type=raw,value=latest
-
-      - name: Build cron image
-        uses: docker/build-push-action@v6
-        env:
-          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.BASE_IMAGE_NAME }}:${{ env.CACHE_TAG }}
-          CACHE_FROM: type=registry,ref=${{ env.BASE_IMAGE_NAME }}:${{ env.CACHE_TAG }}
-        with:
-          push: true
-          file: docker/cron.Dockerfile
-          build-contexts: |
-            base-php-image=docker-image://${{ fromJSON(steps.base-image-metadata.outputs.json).tags[0] }}
-          tags: ${{ steps.cron-image-metadata.outputs.tags }}
-          cache-from: ${{ env.CACHE_FROM }}
-          cache-to: ${{ github.event_name == 'release' && env.CACHE_TO || null }}
+          build-contexts: ${{ env.BUILD_CONTEXT }}
