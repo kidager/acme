@@ -15,6 +15,7 @@ env:
   BASE_IMAGE_NAME: ghcr.io/kidager/test-php-image
   CRON_IMAGE_NAME: ghcr.io/kidager/test-cron-image
   WORKER_IMAGE_NAME: ghcr.io/kidager/test-worker-image
+  CACHE_TAG: cache
 
 jobs:
   docker:
@@ -38,13 +39,20 @@ jobs:
             ${{ env.BASE_IMAGE_NAME }}
           tags: |
             type=raw,value=${{ github.sha }}
+            type=raw,value=latest
 
       - name: Build base image
         uses: docker/build-push-action@v6
+        env:
+          CACHE_REF: ${{ env.WORKER_IMAGE_NAME }}:${{ env.CACHE_TAG }}
+          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.CACHE_REF }}
+          CACHE_FROM: type=registry,ref=${{ env.CACHE_REF }}
         with:
           push: true
           file: docker/base.Dockerfile
           tags: ${{ steps.base-image-metadata.outputs.tags }}
+          cache-from: ${{ env.CACHE_FROM }}
+          cache-to: ${{ github.event_name == 'release' && env.CACHE_TO || null }}
 
       - name: Prepare worker image metadata
         id: worker-image-metadata
@@ -54,15 +62,22 @@ jobs:
             ${{ env.WORKER_IMAGE_NAME }}
           tags: |
             type=raw,value=${{ github.sha }}
+            type=raw,value=latest
 
       - name: Build worker image
         uses: docker/build-push-action@v6
+        env:
+          CACHE_REF: ${{ env.CRON_IMAGE_NAME }}:${{ env.CACHE_TAG }}
+          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.CACHE_REF }}
+          CACHE_FROM: type=registry,ref=${{ env.CACHE_REF }}
         with:
           push: true
           file: docker/worker.Dockerfile
           build-contexts: |
             base-php-image=docker-image://${{ steps.base-image-metadata.outputs.tags }}
           tags: ${{ steps.worker-image-metadata.outputs.tags }}
+          cache-from: ${{ env.CACHE_FROM }}
+          cache-to: ${{ github.event_name == 'release' && env.CACHE_TO || null }}
 
       - name: Prepare cron image metadata
         id: cron-image-metadata
@@ -72,12 +87,19 @@ jobs:
             ${{ env.CRON_IMAGE_NAME }}
           tags: |
             type=raw,value=${{ github.sha }}
+            type=raw,value=latest
 
       - name: Build cron image
         uses: docker/build-push-action@v6
+        env:
+          CACHE_REF: ${{ env.BASE_IMAGE_NAME }}:${{ env.CACHE_TAG }}
+          CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.CACHE_REF }}
+          CACHE_FROM: type=registry,ref=${{ env.CACHE_REF }}
         with:
           push: true
           file: docker/cron.Dockerfile
           build-contexts: |
             base-php-image=docker-image://${{ steps.base-image-metadata.outputs.tags }}
           tags: ${{ steps.cron-image-metadata.outputs.tags }}
+          cache-from: ${{ env.CACHE_FROM }}
+          cache-to: ${{ github.event_name == 'release' && env.CACHE_TO || null }}
