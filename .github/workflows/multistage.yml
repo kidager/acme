@@ -39,7 +39,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          context: .
           file: docker/base.Dockerfile
           tags: ${{ steps.base-image-metadata.outputs.tags }}
 
@@ -56,7 +55,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          context: .
           file: docker/cron.Dockerfile
           build-contexts: |
             base-php-image=docker-image://${{ steps.base-image-metadata.outputs.tags }}
@@ -75,7 +73,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          context: .
           file: docker/worker.Dockerfile
           build-contexts: |
             base-php-image=docker-image://${{ steps.base-image-metadata.outputs.tags }}
