@@ -7,6 +7,10 @@ on:
       - master
       - develop
 
+permissions:
+  contents: write
+  packages: write
+
 env:
   BASE_IMAGE_NAME: ghcr.io/kidager/test-php-image
   CRON_IMAGE_NAME: ghcr.io/kidager/test-cron-image
