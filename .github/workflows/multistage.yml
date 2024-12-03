@@ -72,7 +72,7 @@ jobs:
           push: true
           file: docker/worker.Dockerfile
           build-contexts: |
-            base-php-image=docker-image://${{ steps.base-image-metadata.outputs.tags }}
+            base-php-image=docker-image://${{ fromJSON(steps.base-image-metadata.outputs.json).tags[0] }}
           tags: ${{ steps.worker-image-metadata.outputs.tags }}
           cache-from: ${{ env.CACHE_FROM }}
           cache-to: ${{ github.event_name == 'release' && env.CACHE_TO || null }}
@@ -96,7 +96,7 @@ jobs:
           push: true
           file: docker/cron.Dockerfile
           build-contexts: |
-            base-php-image=docker-image://${{ steps.base-image-metadata.outputs.tags }}
+            base-php-image=docker-image://${{ fromJSON(steps.base-image-metadata.outputs.json).tags[0] }}
           tags: ${{ steps.cron-image-metadata.outputs.tags }}
           cache-from: ${{ env.CACHE_FROM }}
           cache-to: ${{ github.event_name == 'release' && env.CACHE_TO || null }}
