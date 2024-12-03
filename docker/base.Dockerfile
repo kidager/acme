@@ -1,4 +1,4 @@
-FROM php:8.3-cli
+FROM php:8.3-fpm
 
 ENV MLOCATI_DOCKER_PHP_EXTENSION_INSTALLER_VERSION=2.2.17
 ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/download/${MLOCATI_DOCKER_PHP_EXTENSION_INSTALLER_VERSION}/install-php-extensions /usr/local/bin/
