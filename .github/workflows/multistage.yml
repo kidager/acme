@@ -60,7 +60,7 @@ jobs:
         env:
           CACHE_TO: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.DOCKER_PREFIX }}/${{ matrix.image.tagname }}:${{ env.CACHE_TAG }}
           CACHE_FROM: type=registry,ref=${{ env.DOCKER_PREFIX }}/${{ matrix.image.tagname }}:${{ env.CACHE_TAG }}
-          BUILD_CONTEXT: ${{ matrix.image.base_image_replace_with && format('{0}=docker-image://{1}/{2}', matrix.image.base_image_tag, env.DOCKER_PREFIX, matrix.image.base_image_replace_with) || null }}
+          BUILD_CONTEXT: ${{ matrix.image.base_image_replace_with && format('{0}=docker-image://{1}/{2}:{3}', matrix.image.base_image_tag, env.DOCKER_PREFIX, matrix.image.base_image_replace_with, github.sha) || null }}
         with:
           push: ${{ matrix.image.should_push || true }}
           file: ${{ matrix.image.dockerfile }}
