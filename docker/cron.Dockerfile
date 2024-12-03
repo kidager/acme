@@ -15,6 +15,8 @@ RUN arch="$(uname -m)" \
 
 COPY --chown=www-data:www-data docker/cron/crontab /etc/custom-crontab
 
+RUN echo "XTYPE=CRON" >> /etc/environment
+
 USER www-data
 
 ENTRYPOINT ["/usr/bin/supercronic", "-overlapping", "/etc/custom-crontab"]
